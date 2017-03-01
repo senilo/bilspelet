@@ -7,6 +7,7 @@ using DG.Tweening;
 
 public class Car : MonoBehaviour {
     public float speed;
+    public int points;
 	// Use this for initialization
 	void Start () {
         NavMeshHit hit;
@@ -30,5 +31,18 @@ public class Car : MonoBehaviour {
         }
         transform.position = hit.position;
         
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        var building = other.GetComponent<Building>();
+        if (building != null)
+        {
+            if (building.buildingType == Game.instance.nextTarget)
+            {
+                Game.instance.targetReached();
+                points++;
+            }
+        }
     }
 }
