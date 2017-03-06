@@ -21,9 +21,10 @@ public class Game : MonoBehaviour {
     }
 	// Use this for initialization
 	void Start () {
-        previousTarget = BuildingType.HOME;
-        nextTarget = BuildingType.HOME;
-	}
+        previousTarget = BuildingType.Hem;
+        updateTarget();
+        Sounds.instance.PlayRandom(nextTarget, 2f);
+    }
 
 
 
@@ -37,15 +38,12 @@ public class Game : MonoBehaviour {
         } while (nextTarget == previousTarget || !buildings.ContainsKey(nextTarget));
         debugText.text = "Next target: " + nextTarget.ToString();
     }
+
+
 	
 	// Update is called once per frame
 	void Update () {
-        if (previousTarget == nextTarget)
-        {
-            Debug.Assert(buildings.Keys.Count > 1);
-            if (buildings.Keys.Count < 2) return;
-            updateTarget();
-        }
+
     }
 
     public void RegisterBuilding(GameObject g)
@@ -58,7 +56,11 @@ public class Game : MonoBehaviour {
     public void targetReached()
     {
         previousTarget = nextTarget;
+        Sounds.instance.PlayRandom(Sounds.instance.bra);
         updateTarget();
+
+
+        Sounds.instance.PlayRandom(nextTarget, 3f);
     }
 
     public GameObject getNextTarget()

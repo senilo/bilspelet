@@ -26,7 +26,7 @@ public class PointAtTarget : MonoBehaviour {
             if(!transform.GetChild(0).gameObject.activeInHierarchy && Time.time > activateTime)
             {
                 transform.GetChild(0).gameObject.SetActive(true);
-                transform.DOPunchPosition(transform.forward, 0.3f);
+                transform.DOPunchScale(1f * Vector3.one, 0.3f);
             }
         }
         transform.DORotate(Quaternion.LookRotation(Game.instance.getNextTarget().transform.position - transform.position).eulerAngles, 0.5f);

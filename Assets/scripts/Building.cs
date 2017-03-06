@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BuildingType { HOME, KINDERGARTEN, WORK, GROCERY_STORE, HOSPITAL }
+public enum BuildingType { Hem, Dagis, Jobb, Mammas_jobb, Affär, Sjukhus, Stugan}
 
 public class Building : MonoBehaviour {
     public BuildingType buildingType;
+
+    void OnValidate()
+    {
+        name = buildingType.ToString();
+    }
 	// Use this for initialization
 	void Start () {
         Game.instance.RegisterBuilding(gameObject);
@@ -15,4 +20,9 @@ public class Building : MonoBehaviour {
 	void Update () {
 		
 	}
+
+    void OnDrawGizmos()
+    {
+
+    }
 }
