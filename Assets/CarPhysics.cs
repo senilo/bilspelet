@@ -57,7 +57,7 @@ public class CarPhysics : MonoBehaviour {
     public void FixedUpdate()
     {
         currentSpeed = Vector3.Dot(rb.velocity, transform.forward) * 3.6f;
-        carText.text = "Speed: " + currentSpeed.ToString();
+        carText.text = "Speed: " + currentSpeed.ToString("0.0");
         float motor = 0;
         float brake = 0;
 
@@ -69,9 +69,11 @@ public class CarPhysics : MonoBehaviour {
         throttle = 0.1f*Mathf.Min(direction.sqrMagnitude, 1f);
 
         float carAngle = Quaternion.LookRotation(transform.forward).eulerAngles.y;
-        carText.text += ", Car angle " + carAngle + ", Angle: " + angle; ;
+        carText.text += ", Car angle " + carAngle.ToString("0") + ", Angle: " + angle.ToString("0");
 
         float steering = steeringAngle[0] * Input.GetAxis("Horizontal");
+        steering = Mathf.Repeat(angle - carAngle, 360);
+
 
         if (throttle < 0 && currentSpeed > 1f || (throttle > 0 && currentSpeed < -1f))
         {
