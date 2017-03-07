@@ -1,21 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CarPhysics : MonoBehaviour {
 
     public List<AxleInfo> axleInfos; // the information about each individual axle
     public float maxMotorTorque; // maximum torque the motor can apply to wheel
-    public float maxSteeringAngle; // maximum steer angle the wheel can have
-    public float minSteeringAngle = 5;
-    public float steeringSpeed1 = 20;
-    public float steeringSpeed2 = 50;
+    public Vector2 steeringSpeed;
+    public Vector2 steeringAngle;
+
+
     public GameObject tp;
     Rigidbody rb;
-    public float maxSpeed1 = 30;
-    public float maxSpeed2 = 40;
-    public float reverseMaxSpeed1 = 10;
-    public float reverseMaxSpeed2 = 15;
+    public float maxSpeed;
+    public float reverseMaxSpeed;
+
+    public Text carText;
 
     float currentSpeed = 0;
     float engineRPM = 0;
@@ -29,6 +30,10 @@ public class CarPhysics : MonoBehaviour {
     {
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = tp.transform.localPosition;
+
+        var wheelColliders = GetComponentsInChildren<WheelCollider>();
+
+
     }
 
     public void ApplyLocalPositionToVisuals(WheelCollider collider)
@@ -47,55 +52,45 @@ public class CarPhysics : MonoBehaviour {
         visualWheel.transform.rotation = rotation;
     }
 
+    
+
     public void FixedUpdate()
     {
         currentSpeed = Vector3.Dot(rb.velocity, transform.forward) * 3.6f;
+        carText.text = "Speed: " + currentSpeed.ToString();
         float motor = 0;
         float brake = 0;
-        if (Input.GetAxis("Vertical") < 0)
+
+        Vector2 direction = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        float angle = Mathf.Rad2Deg * Mathf.Atan2(direction.x, direction.y);
+        angle = Mathf.Repeat(angle, 360);
+
+        var throttle = Input.GetAxis("Vertical");
+        throttle = 0.1f*Mathf.Min(direction.sqrMagnitude, 1f);
+
+        float carAngle = Quaternion.LookRotation(transform.forward).eulerAngles.y;
+        carText.text += ", Car angle " + carAngle + ", Angle: " + angle; ;
+
+        float steering = steeringAngle[0] * Input.GetAxis("Horizontal");
+
+        if (throttle < 0 && currentSpeed > 1f || (throttle > 0 && currentSpeed < -1f))
         {
-            if (currentSpeed > 0)
-            {
+            Debug.Log("Brake");
                 motor = 0;
                 brake = maxMotorTorque;
-            }
-            else if (-currentSpeed < reverseMaxSpeed1)
-            {
-                motor = maxMotorTorque * Input.GetAxis("Vertical");
-            }
-            else if (-currentSpeed < reverseMaxSpeed2)
-            {
-                motor = Input.GetAxis("Vertical") * maxMotorTorque - maxMotorTorque * (-currentSpeed - reverseMaxSpeed1) / (reverseMaxSpeed1 - reverseMaxSpeed2);
-            }
-        }
-        else if (Input.GetAxis("Vertical") > 0)
-        {
-            if (currentSpeed < 0)
-            {
-                motor = 0;
-                brake = maxMotorTorque;
-            }
-            else if (currentSpeed < maxSpeed1)
-            {
-                motor = maxMotorTorque * Input.GetAxis("Vertical");
-            }
-            else if (currentSpeed < maxSpeed2)
-            {
-                motor = Input.GetAxis("Vertical") * maxMotorTorque - maxMotorTorque * (currentSpeed - maxSpeed1) / (maxSpeed1 - maxSpeed2);
-                motor = Input.GetAxis("Vertical") * Mathf.Lerp(maxMotorTorque, 0, (currentSpeed - maxSpeed1) / (maxSpeed1 - maxSpeed2));
-            }
         }
         else
+        {
+            brake = 0;
+            motor = throttle * maxMotorTorque;
+        }
+        
+        if(currentSpeed > maxSpeed || currentSpeed < -reverseMaxSpeed)
         {
             motor = 0;
         }
 
-        float steering = maxSteeringAngle * Input.GetAxis("Horizontal");
-        if (currentSpeed > steeringSpeed1)
-        {
-            steering = Input.GetAxis("Horizontal") * interp(currentSpeed, steeringSpeed1, steeringSpeed2, maxSteeringAngle, minSteeringAngle);
-        }
-
+        
 
         foreach (AxleInfo axleInfo in axleInfos)
         {
@@ -109,7 +104,6 @@ public class CarPhysics : MonoBehaviour {
                 axleInfo.leftWheel.motorTorque = motor;
                 axleInfo.rightWheel.motorTorque = motor;
             }
-
             axleInfo.leftWheel.brakeTorque = brake;
             axleInfo.rightWheel.brakeTorque = brake;
             ApplyLocalPositionToVisuals(axleInfo.leftWheel);
