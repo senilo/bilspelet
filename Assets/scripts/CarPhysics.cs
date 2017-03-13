@@ -20,7 +20,6 @@ public class CarPhysics : MonoBehaviour {
     public Text carText;
 
     float currentSpeed = 0;
-    float engineRPM = 0;
     Vector2 oldDirection;
     float upsideDownCounter;
     float maxRPM;
@@ -35,7 +34,6 @@ public class CarPhysics : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = tp.transform.localPosition;
 
-        var wheelColliders = GetComponentsInChildren<WheelCollider>();
         oldDirection = new Vector2();
         //maxRPM = wheelColliders
     }
@@ -92,10 +90,9 @@ public class CarPhysics : MonoBehaviour {
                 );
         }
 
-        Debug.Log("angleRelativeCar: " + angleRelativeCar.ToString("0.0"));
         float throttle = Mathf.Min(controlDirection.magnitude, 1f);
 
-        if(Mathf.Abs(angleRelativeCar) > 170)
+        if(Mathf.Abs(angleRelativeCar) > 150)
         {
             if(currentSpeed > 0f)
             {
@@ -131,8 +128,6 @@ public class CarPhysics : MonoBehaviour {
         if (currentSpeed > maxSpeed) motor = 0f;
 
 
-        
-
         foreach (AxleInfo axleInfo in axleInfos)
         {
             if (axleInfo.steering)
@@ -158,32 +153,6 @@ public class CarPhysics : MonoBehaviour {
         }
 
         
-    }
-    public void Update()
-    {
-        if(transform.up.y < 0)
-        {
-            upsideDownCounter += Time.deltaTime;
-            if(upsideDownCounter > 5f)
-            {
-                resetPosition();
-            }
-        } else
-        {
-            upsideDownCounter = 0;
-        }
-
-    }
-
-    private void resetPosition()
-    {
-        var rb = GetComponent<Rigidbody>();
-        rb.isKinematic = true;
-        var newPos = transform.position;
-        newPos.y += 10f;
-        transform.position = newPos;
-        transform.rotation = Quaternion.identity;
-        rb.isKinematic = false;
     }
 
     public void OnCollisionEnter(Collision collision)

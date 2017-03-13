@@ -5,12 +5,17 @@ using UnityEngine.AI;
 
 using DG.Tweening;
 
+
 public class Car : MonoBehaviour {
     public float speed;
     public int points;
     HashSet<BuildingType> wrongBuilding;
-	// Use this for initialization
-	void Start () {
+    float upsideDownCounter;
+    float underWaterCounter;
+    // Use this for initialization
+    void Start () {
+        upsideDownCounter = 0;
+        underWaterCounter = 0;
         NavMeshHit hit;
         NavMesh.SamplePosition(transform.position, out hit, 100, NavMesh.AllAreas);
         transform.position = hit.position;
@@ -19,21 +24,47 @@ public class Car : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        /*
-        Vector3 newPos = transform.position;
-        newPos.x += Input.GetAxis("Horizontal") * speed;
-        newPos.z += Input.GetAxis("Vertical") * speed;
+
+        if(transform.position.y < Game.instance.waterLevel)
+        {
+            underWaterCounter += Time.deltaTime;
+            if (underWaterCounter > 5f)
+            {
+                resetPosition();
+            }
+        } else
+        {
+            underWaterCounter = 0;
+        }
+
+        if (transform.up.y < 0)
+        {
+            upsideDownCounter += Time.deltaTime;
+            if (upsideDownCounter > 5f)
+            {
+                resetPosition();
+            }
+        }
+        else
+        {
+            upsideDownCounter = 0;
+        }
+    }
+
+    private void resetPosition()
+    {
 
         NavMeshHit hit;
-        NavMesh.SamplePosition(newPos, out hit, 100, NavMesh.AllAreas);
-        Vector3 diff = hit.position - transform.position;
-        if (diff.magnitude > 0.1f)
-        {
-            var direction = Quaternion.LookRotation(diff).eulerAngles;
-            transform.DORotate(direction, 0.5f);
-        }
-        //transform.position = hit.position;
-        */
+        NavMesh.SamplePosition(transform.position, out hit, Mathf.Infinity, NavMesh.AllAreas);
+        NavMesh.SamplePosition(hit.position + (hit.position - transform.position).normalized * 10f,out hit, Mathf.Infinity, NavMesh.AllAreas);
+
+        var rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        var newPos = hit.position;
+        newPos.y += 10f;
+        transform.position = newPos;
+        transform.rotation = Quaternion.identity;
+        rb.isKinematic = false;
     }
 
     void OnTriggerEnter(Collider other)
@@ -45,6 +76,7 @@ public class Car : MonoBehaviour {
             {
                 Game.instance.targetReached();
                 wrongBuilding.Clear();
+                wrongBuilding.Add(building.buildingType);
                 points++;
             } else
             {

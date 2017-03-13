@@ -9,8 +9,9 @@ public class Game : MonoBehaviour {
     public Dictionary<BuildingType, GameObject> buildings;
     public BuildingType previousTarget;
     public BuildingType nextTarget;
-
-
+    public GameObject water;
+    //[HideInInspector]
+    public float waterLevel;
     public UnityEngine.UI.Text debugText;
 
     void Awake()
@@ -24,6 +25,7 @@ public class Game : MonoBehaviour {
         previousTarget = BuildingType.Hem;
         updateTarget();
         Sounds.instance.PlayRandom(nextTarget, 2f);
+        waterLevel = water.transform.position.y - 2f;
     }
 
 
@@ -60,7 +62,7 @@ public class Game : MonoBehaviour {
         updateTarget();
 
 
-        Sounds.instance.PlayRandom(nextTarget, 3f);
+        Sounds.instance.PlayRandom(nextTarget, 2f);
     }
 
     public GameObject getNextTarget()
